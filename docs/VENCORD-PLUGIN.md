@@ -108,10 +108,12 @@ Exposed in Vencord's plugin settings UI. Persisted via Vencord's `DataStore`.
 | --- | --- | --- |
 | Auto Start | `false` | (none, the userscript starts on paste) |
 | Auto-enroll | `true` | `RUNTIME.autoEnroll` (picker toggle). Off leaves quests you have not accepted untouched and lists them as `PENDING` until you accept them in Discord. |
+| Orb quests only | `false` | The picker's `ORBS` reward filter. Runs only quests where any reward pays Orbs, not only the first, since a quest can list an in-game item ahead of them. Everything else is left out of the run: not accepted, not started, reported in the wrap-up as left out rather than failed. A quest already running when it is turned on finishes; turning it off mid-run puts the left-out quests back in on the next cycle. |
 | Watch for enrollments | `false` | (none, the userscript is a paste-and-run session with nothing idle to watch). Uses Discord's `QUESTS_ENROLL_SUCCESS` Flux event while the engine is idle instead of inferring enrollments from generic QuestStore changes. Owned by `index.tsx` rather than the engine: armed by plugin load and `/orion start`, disarmed by `/orion stop` and by disabling the plugin, left armed when a queue drains on its own. |
 | Try achievement bypass | `false` | `Consent.ask()` popup. **This is the account-risk setting.** Off means `ACHIEVEMENT_IN_ACTIVITY` quests are skipped rather than completed. Turning it on is your consent to OAuth-authorize each quest's app on your account. Read the caution in the [README](../README.md) first. |
 | Try to claim reward | `false` | `RUNTIME.autoClaim` (picker toggle) |
 | Hide activity | `false` | `CONFIG.HIDE_ACTIVITY`. Both turn Discord's own `status.showCurrentGame` off while quests run and restore it on stop. Needs `UserSettingsAPI`, which the plugin declares as a dependency. |
+| Play session tail | `2` | `CONFIG.PLAY_SESSION_TAIL_MIN`. Minutes a finished game quest keeps its spoofed process, randomised between 40% and 100% of the value, `0` to drop it on the heartbeat that crossed the target. Extends presence only: Discord ends the quest heartbeat itself on completion. |
 | Game concurrency | `1` | inferred from `runConcurrent(queues.game, 1)` |
 | Video concurrency | `2` | inferred from `runConcurrent(queues.video, 2)` |
 | Play sound | `false` | `RUNTIME.playSound` (picker toggle) |

@@ -199,22 +199,27 @@ export function recordOutcome(outcomes: Map<string, QuestOutcome>, id: string, o
  * gained completedAt fixes both that and the quest counted as finished and skipped at once.
  */
 export function summarizeRun(outcomes: Map<string, QuestOutcome>): RunSummary {
-    let finished = 0, blocked = 0, failed = 0;
+    let finished = 0, blocked = 0, filtered = 0, failed = 0;
     for (const outcome of outcomes.values()) {
         if (outcome === "completed") finished++;
         else if (outcome === "blocked") blocked++;
+        else if (outcome === "filtered") filtered++;
         else failed++;
     }
 
-    if (!blocked && !failed) {
-        return { finished, blocked, failed, line: "All available quests are completed!", playDone: true };
+    // A filtered quest has to keep this run off the "all completed" line. A run where Orb-only
+    // left out every quest there was did nothing, and announcing that as everything completed,
+    // with the done sound, is the same false success failTask used to produce.
+    if (!blocked && !filtered && !failed) {
+        return { finished, blocked, filtered, failed, line: "All available quests are completed!", playDone: true };
     }
 
     const parts: string[] = [];
     if (finished) parts.push(`${finished} quest(s) finished`);
     if (blocked) parts.push(`${blocked} skipped because this client cannot drive them`);
+    if (filtered) parts.push(`${filtered} left out because they pay no Orbs`);
     if (failed) parts.push(`${failed} failed`);
-    return { finished, blocked, failed, line: `Nothing left to run. ${parts.join(", ")}.`, playDone: finished > 0 };
+    return { finished, blocked, filtered, failed, line: `Nothing left to run. ${parts.join(", ")}.`, playDone: finished > 0 };
 }
 
 /**

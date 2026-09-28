@@ -92,12 +92,18 @@ export interface FakeGame {
 }
 
 /** Terminal outcome of one quest in one run. */
-export type QuestOutcome = "completed" | "blocked" | "failed";
+/**
+ * What a run did with a quest. "blocked" means this client cannot drive it; "filtered" means the
+ * user asked for it to be left out (the Orb-only setting), which is a choice and not a failure,
+ * and has to read that way in the wrap-up.
+ */
+export type QuestOutcome = "completed" | "blocked" | "filtered" | "failed";
 
 /** Counts and wrap-up wording for a run with nothing left to do. */
 export interface RunSummary {
     finished: number;
     blocked: number;
+    filtered: number;
     failed: number;
     line: string;
     playDone: boolean;

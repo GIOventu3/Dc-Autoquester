@@ -28,6 +28,17 @@ export function fireAchievementBypassChanged(value: boolean): void {
     onAchievementBypass?.(value);
 }
 
+let onOrbQuestsOnly: Handler<boolean> | null = null;
+
+export function setOrbQuestsOnlyHook(fn: Handler<boolean> | null): void {
+    onOrbQuestsOnly = fn;
+}
+
+/** No-op while the engine is down. The next start reads the setting fresh. */
+export function fireOrbQuestsOnlyChanged(value: boolean): void {
+    onOrbQuestsOnly?.(value);
+}
+
 let onWatchForEnrollments: Handler<boolean> | null = null;
 
 /**

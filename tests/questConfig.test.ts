@@ -161,3 +161,46 @@ test("a run with nothing to report keeps the original completion line", () => {
     assert.equal(summary.line, "All available quests are completed!");
     assert.equal(summary.playDone, true);
 });
+
+test("a run where Orb-only left out every quest does not claim it completed them", () => {
+    // Every quest the account had paid no Orbs, so the run did nothing. Reading an outcome map
+    // with nothing blocked and nothing failed as success is how the done sound played over a run
+    // that farmed nothing, which is exactly what summarizeRun exists to stop.
+    const summary = summarizeRun(outcomesOf(["q1", "filtered"], ["q2", "filtered"]));
+
+    assert.equal(summary.finished, 0);
+    assert.equal(summary.filtered, 2);
+    assert.equal(summary.playDone, false);
+    assert.doesNotMatch(summary.line, /All available quests are completed/);
+    assert.match(summary.line, /2 left out because they pay no Orbs/);
+});
+
+test("a quest left out by Orb-only is neither a failure nor a quest this client cannot drive", () => {
+    const summary = summarizeRun(outcomesOf(["q1", "completed"], ["q2", "filtered"]));
+
+    assert.equal(summary.failed, 0);
+    assert.equal(summary.blocked, 0);
+    assert.equal(summary.filtered, 1);
+    assert.doesNotMatch(summary.line, /failed|cannot drive/);
+});
+
+test("a run that farmed Orb quests and left the rest out reports both and keeps the sound", () => {
+    const summary = summarizeRun(outcomesOf(["q1", "completed"], ["q2", "completed"], ["q3", "filtered"]));
+
+    assert.equal(summary.playDone, true);
+    assert.match(summary.line, /2 quest\(s\) finished/);
+    assert.match(summary.line, /1 left out because they pay no Orbs/);
+});
+
+test("a quest put back after Orb-only is turned off and then finished counts once, as finished", () => {
+    const outcomes = outcomesOf(["q1", "filtered"], ["q1", "completed"]);
+    const summary = summarizeRun(outcomes);
+
+    assert.equal(outcomes.size, 1);
+    assert.equal(summary.finished, 1);
+    assert.equal(summary.filtered, 0);
+});
+
+test("a filter recorded after a completion never overwrites it", () => {
+    assert.equal(summarizeRun(outcomesOf(["q1", "completed"], ["q1", "filtered"])).finished, 1);
+});

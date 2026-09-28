@@ -954,7 +954,13 @@
                     if (!SYS.IS_DESKTOP && (typeData.type === 'GAME' || typeData.type === 'STREAM')) return;
 
                     const rw = q.config?.rewardsConfig?.rewards?.[0];
-                    const rewardType = rw?.type ?? 0;
+                    const orbs = orbReward(q.config);
+                    // A quest is filed under ORBS when any of its rewards pays Orbs. Filing it by
+                    // rewards[0] alone put a quest listing an in-game item ahead of its Orbs under
+                    // IN-GAME, so choosing ORBS hid a quest that pays them. orbReward already sums
+                    // every entry for the payout line; the filter was the one place still reading
+                    // the first. It also has to agree with the plugin's Orb-only setting.
+                    const rewardType = orbs ? 4 : (rw?.type ?? 0);
                     const rewardText = rw?.messages?.name ?? "Unknown Reward";
 
                     const meta = REWARD_META[rewardType] ?? REWARD_FALLBACK;
@@ -966,8 +972,6 @@
                         rewardTypes.set(rewardType, { label: meta.label, count: 0, type: rewardType, color: meta.color });
                     }
                     rewardTypes.get(rewardType).count++;
-
-                    const orbs = orbReward(q.config);
 
                     items.push({
                         id: q.id,

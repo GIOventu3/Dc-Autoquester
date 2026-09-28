@@ -15,10 +15,10 @@ import { FluxDispatcher, RestAPI } from "@webpack/common";
 
 import { isConfirmedDifferentAccount } from "./accountIdentity";
 import { companionFailure, COMPANION_EVENT_CODES, emitCompanionEvent } from "./companionEvents";
-import { setAchievementBypassHook } from "./hooks";
+import { setAchievementBypassHook, setOrbQuestsOnlyHook } from "./hooks";
 import { Patcher } from "./patcher";
 import { questBlocker, recordOutcome, selectQuestTaskConfig, summarizeRun, taskEntries } from "./questConfig";
-import { orbBalance } from "./questRewards";
+import { orbBalance, questOrbReward } from "./questRewards";
 import { schedulerLaneForTaskType, schedulerMetadata, type SchedulerLane, type SchedulerSnapshot, type SchedulerTaskView } from "./schedulerMetadata";
 import { settings } from "./settings";
 import { TaskControlRegistry, type TaskLifecycle } from "./taskControl";
@@ -814,10 +814,11 @@ async function mainLoop(
                     level: summary.failed > 0 ? "warning" : "info",
                     message: summary.line,
                 });
-                if (summary.blocked || summary.failed) {
+                if (summary.blocked || summary.filtered || summary.failed) {
                     const parts: string[] = [];
                     if (summary.finished) parts.push(`${summary.finished} quest(s) finished`);
                     if (summary.blocked) parts.push(`${summary.blocked} were skipped because this client cannot drive them`);
+                    if (summary.filtered) parts.push(`${summary.filtered} were left out because they pay no Orbs`);
                     if (summary.failed) parts.push(`${summary.failed} failed`);
                     lastRunOutcome = `${parts.join(", ")}.`;
                 } else {
@@ -842,6 +843,32 @@ async function mainLoop(
                     const questName = q.config?.messages?.questName ?? q.id;
                     const hasTaskConfig = !!cfg?.tasks && typeof cfg.tasks === "object";
                     const detected = hasTaskConfig ? runTasks.detectType(cfg, q.config?.application?.id) : null;
+
+                    // Orb-only is checked here, after the two guards above, so a quest already
+                    // running when the setting is turned on keeps its control and finishes. It is
+                    // not a questBlocker reason: those hold for the whole run, and this one is a
+                    // preference the user can turn off, which retryOrbFilterSkipped undoes.
+                    if (settings.store.orbQuestsOnly && !questOrbReward(q.config)) {
+                        // The last sentence is what QuestUI's console parser matches to file this
+                        // under a blocked quest, pairing it with the structured event below
+                        // instead of logging the same quest twice.
+                        logger.info(`[Quest] "${questName}" pays no Orbs and Orb-only quests is on. Skipping it for the rest of this run.`);
+                        emitCompanionEvent({
+                            code: COMPANION_EVENT_CODES.QUEST_BLOCKED,
+                            category: "quest",
+                            level: "info",
+                            message: `Orion left "${questName}" out of this run because it pays no Orbs and Orb-only quests is on.`,
+                            questId: q.id,
+                            questName,
+                            taskType: detected?.type,
+                            reason: "Pays no Orbs, and Orb-only quests is on",
+                        });
+                        runRuntime.skipped.add(q.id);
+                        runTasks.skipped.add(q.id);
+                        runTasks.orbFilterSkipped.add(q.id);
+                        recordOutcome(runRuntime.outcomes, q.id, "filtered");
+                        continue;
+                    }
                     const blocker = questBlocker({
                         name: questName,
                         hasTaskConfig,
@@ -1190,6 +1217,15 @@ export async function startOrion(): Promise<void> {
             if (restored > 0) logger.info(`[System] Achievement bypass enabled, retrying ${restored} skipped quest(s) on the next cycle.`);
         });
 
+        // Turning Orb-only on needs nothing here: the next cycle reads the setting and leaves
+        // the non-Orb quests out. Turning it off is the direction that has to undo something.
+        setOrbQuestsOnlyHook(enabled => {
+            if (enabled || !isRunActive(runId, runRuntime)) return;
+            if (isConfirmedDifferentAccount(getCurrentUserId(), runUserId)) return;
+            const restored = runTasks.retryOrbFilterSkipped();
+            if (restored > 0) logger.info(`[System] Orb-only quests turned off, putting ${restored} quest(s) back in on the next cycle.`);
+        });
+
         try {
             if (typeof Notification !== "undefined" && Notification.permission === "default") {
                 Notification.requestPermission();
@@ -1271,6 +1307,7 @@ export function stopOrion(): void {
     }
 
     setAchievementBypassHook(null);
+    setOrbQuestsOnlyHook(null);
 
     try { patcher?.clean(); }
     catch (e: any) {

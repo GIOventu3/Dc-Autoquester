@@ -10,7 +10,7 @@
 import { definePluginSettings } from "@api/Settings";
 import { OptionType } from "@utils/types";
 
-import { fireAchievementBypassChanged, fireWatchForEnrollmentsChanged } from "./hooks";
+import { fireAchievementBypassChanged, fireOrbQuestsOnlyChanged, fireWatchForEnrollmentsChanged } from "./hooks";
 
 export const settings = definePluginSettings({
     autoStart: {
@@ -25,6 +25,14 @@ export const settings = definePluginSettings({
         description:
             "Accept quests for you before running them. Turn it off to run only the quests you accepted yourself in Discord's Quests page: anything you haven't accepted is left untouched and listed as PENDING in /orion status, and it starts on the next cycle the moment you accept it, without restarting the engine.",
         default: true,
+    },
+
+    orbQuestsOnly: {
+        type: OptionType.BOOLEAN,
+        description:
+            "Run only quests that pay Orbs. Every other quest is left alone for the run: not accepted, not started, and not counted as a failure. A quest counts when any of its rewards carries Orbs, not only the first one, since Discord can list an in-game item ahead of the Orbs. Quests already running when you turn this on are allowed to finish. Turning it off mid-run puts the quests it left out back in on the next cycle.",
+        default: false,
+        onChange: (value: boolean) => fireOrbQuestsOnlyChanged(value),
     },
 
     watchForEnrollments: {

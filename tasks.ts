@@ -121,6 +121,8 @@ export interface TaskCallbacks {
 export class TaskRunner {
     public skipped = new Set<string>();
     public consentSkipped = new Set<string>();
+    /** Quests left out only because Orb-only was on, so turning it off can put them back. */
+    public orbFilterSkipped = new Set<string>();
     private stores: Stores;
     private traffic: Traffic;
     private patcher: Patcher;
@@ -1057,6 +1059,18 @@ export class TaskRunner {
             restored++;
         }
         this.consentSkipped.clear();
+        return restored;
+    }
+
+    /** The Orb-only counterpart of retryConsentSkipped, for when the setting is turned off. */
+    retryOrbFilterSkipped(): number {
+        let restored = 0;
+        for (const id of this.orbFilterSkipped) {
+            if (!this.skipped.delete(id)) continue;
+            this.runtime.outcomes.delete(id);
+            restored++;
+        }
+        this.orbFilterSkipped.clear();
         return restored;
     }
 
