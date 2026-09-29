@@ -110,7 +110,7 @@ Vanilla Discord **Stable** no longer exposes the live cache post-boot, so Stable
 | `ACTIVITY`                | Heartbeats against a voice-channel stream key                                              | Yes                |
 | `ACHIEVEMENT_IN_ACTIVITY` | Heartbeat spoof first; on rejection, the OAuth → discordsays progress forgery (below)      | Yes, with consent  |
 
-### `STREAM_ON_DESKTOP` does not complete, and the spoof is why
+### `STREAM_ON_DESKTOP` needs a real Go Live, which the engine does not perform
 
 Discord decides which stream quests are progressing in `QuestProgressManager.getActivelyProgressingStreamOnDesktopQuests()`. Read off Stable 1.0.9255 and Canary 1.0.1148, which carry the same module:
 
@@ -134,7 +134,7 @@ Three conditions have to hold before the one Orion fakes is even read:
 
 Measured on both branches with the engine's own spoof installed and nothing else: `getCurrentUserActiveStream()` stays `null`, so the set comes back empty and Discord never opens a heartbeat for the quest. The task therefore runs its 90 second no-heartbeat watchdog and aborts. Nothing about it is silent, but it also never completes.
 
-Making it work means faking conditions 1 and 2 as well, and then finding out whether the server accepts a heartbeat carrying a stream key for a stream that was never created. That last part is unknown: the `ACTIVITY` path does get synthesized stream keys accepted, but for a voice channel that genuinely exists. Tracked in [#75](https://github.com/nyxxbit/discord-quest-completer/issues/75), and not implemented on a guess.
+The way to complete one is not to fake conditions 1 and 2. It is to satisfy them for real: actually Go Live, with one other person in the channel, while the metadata spoof points the stream at the quest's application. That is what [aamiaa's completer](https://gist.github.com/aamiaa/204cd9d42013ded9faf646fae7f89fbb), the widely used one, does, and its stream spoof is byte for byte what the engine already installs: `getStreamerActiveStreamMetadata` returning `{id: applicationId, ...}`. It fakes only that and tells the user to Go Live with a viewer. A script that fakes every fakeable field does not fake conditions 1 and 2, and that is the answer to the open question: the server validates the real stream and the real viewer, and trusts the client only for which application is being streamed. So the spoof is not what stops a stream quest completing. The missing piece is a real Go Live, a user action the engine does not perform, which is why it orders STREAM last and does not pretend to drive it. Tracked in [#75](https://github.com/nyxxbit/discord-quest-completer/issues/75). Unverified end to end here only because no `STREAM_ON_DESKTOP` quest has been in the catalogue to run against, on any account, across 194 delivered and excluded quests checked on 2026-09-28.
 
 ### Where the application id comes from
 
