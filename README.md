@@ -29,16 +29,30 @@ Two ways to run it. A single userscript you paste into DevTools, or a Vencord pl
 A quest picker appears. Choose what to run and hit start. `Shift + .` hides and shows the dashboard, and STOP ends the run and undoes everything it patched.
 
 <details>
-<summary>Enabling the console on Discord Stable</summary>
+<summary> Enabling the console on Discord Stable</summary>
 
 Close Discord, edit `%appdata%/discord/settings.json`:
 
 ```json
 { "DANGEROUS_ENABLE_DEVTOOLS_ONLY_ENABLE_IF_YOU_KNOW_WHAT_YOURE_DOING": true }
-```
 
+```
 Restart Discord.
 </details>
+
+
+## Notice
+You only need to put `allow pasting` once, after that just copy all the code in [`index.js`](index.js), enter and start quest, THAT FUCKING EASY.
+
+***
+
+
+
+
+## Compatibility
+Works on windows
+Works on Mac
+Works on Linux (doesn't work on vesktop)
 
 ## What it does per quest type
 
