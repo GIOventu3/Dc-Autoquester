@@ -2922,5 +2922,7 @@
 
         // Failsafe: release lock unconditionally so user can retry without reloading tab
         setTimeout(() => { window.orionLock = false; }, 1500);
+
+		//Very low chance of getting disabled
     });
 })();
