@@ -11,9 +11,9 @@ It handles all five quest types: play a game, stream a game, watch a video, join
 Two ways to run it. A single userscript you paste into DevTools, or a Vencord plugin that starts with Discord. Same engine, kept in sync, in this repo.
 
 > [!CAUTION]
-> **Discord has been enforcing against quest automation since April 2026.** People have had system messages land on their account after running automation, any automation, not only this. That is the trade you are making.
+> **IF YOUR ACC GET WARNED/BANNED, I am not Responsible**
 >
-> The one case reported here with details attached, [#59](https://github.com/nyxxbit/discord-quest-completer/issues/59), was a **14 day quest restriction** after four to five weeks of consistent use: a system notification citing quest automation, quests locked, and nothing else on the account visibly touched. Read that last part narrowly: the datamine account below reports an Account Standing violation attached to these, and a strike on the account record is not something the person holding the account would necessarily see. Orion reads that state (`questAccessSuspendedUntil`) and stops with the date rather than failing quietly. One report is not a pattern, and nothing stops Discord from acting on the whole account instead. Assume it can.
+> **Discord has been enforcing against quest automation since April 2026.** People have had system messages land on their account after running automation, any automation, not only this. That is the trade you are making.
 >
 
 ## Quick start, userscript
