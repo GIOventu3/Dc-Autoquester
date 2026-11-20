@@ -4,8 +4,8 @@
     /* ── config (Safe for users to edit) ────────────────────────── */
 
     const CONFIG = {
-        NAME: "Orion",
-        VERSION: "v4.11.5",
+        NAME: "Orion Ascended",
+        VERSION: "v4.12.0",
         THEME: "#5865F2",             // discord blurple
         SUCCESS: "#3BA55C",
         WARN: "#faa61a",
@@ -590,7 +590,7 @@
             this.root.innerHTML = `
                 <div id="orion-head">
                     <span id="orion-title">${ICONS.BOLT} ${CONFIG.NAME}
-                        <span class="dev-credit">by syntt_</span>
+                        <span class="dev-credit">Reimagined by GIO, og - syntt</span>
                         <span style="opacity:0.6; font-size:10px; margin-left:4px; padding-top: 3px; font-weight:500;">${CONFIG.VERSION}</span>
                     </span>
                     <div id="orion-controls">
