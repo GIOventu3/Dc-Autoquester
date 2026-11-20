@@ -1,4 +1,4 @@
-# Orion Reimagined
+# Orion Ascended
 
 [![Version](https://img.shields.io/badge/v4.11.5-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://github.com/nyxxbit/discord-quest-completer/releases/latest)
 [![Stars](https://img.shields.io/github/stars/nyxxbit/discord-quest-completer?style=for-the-badge&color=faa61a)](https://github.com/nyxxbit/discord-quest-completer/stargazers)
